@@ -114,6 +114,7 @@ function startApp(r, code) {
   roomCodeBadge.textContent = roomId;
 
   if (role === 'follower') {
+    app.classList.add('follower');
     followerOverlay.classList.add('visible');
     playBtn.disabled = true;
     latencyStat.style.display = 'flex';

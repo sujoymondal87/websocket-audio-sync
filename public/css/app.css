@@ -216,6 +216,8 @@ body {
 }
 
 .block-tab:hover { color: var(--text); }
+.follower .block-tab { cursor: default; }
+.follower .block-tab:hover { color: var(--text-dim); }
 .block-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .block-tab .stop-num {
   font-family: var(--font-mono);
@@ -315,6 +317,7 @@ body {
 
 .play-btn:hover { opacity: 0.85; }
 .play-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.follower .play-btn { display: none; }
 
 .progress-wrap {
   flex: 1;
