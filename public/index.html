@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taj Mahal Audio Guide — Live Sync</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+
+<!-- ── Home / Join Screen ── -->
+<div class="home-screen" id="homeScreen">
+  <div class="home-title">
+    <h1>Taj Mahal Audio Guide</h1>
+    <p>Real-time multi-device sync · Leader controls · Followers listen</p>
+  </div>
+
+  <div class="join-panels">
+    <!-- Leader -->
+    <div class="join-card">
+      <h2>🎙 Join as Leader</h2>
+      <p>Create a room and control playback for all followers. Share your room code with visitors.</p>
+      <button class="btn btn-primary" id="createRoomBtn">Create Room</button>
+      <div id="leaderCodeDisplay" style="display:none;">
+        <p style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">Your room code — share this</p>
+        <div style="font-family:var(--font-mono); font-size:28px; letter-spacing:8px; text-align:center; color:var(--accent); padding:12px; background:var(--accent-dim); border-radius:6px;" id="generatedCode"></div>
+        <button class="btn btn-primary" style="width:100%; margin-top:8px;" id="enterAsLeaderBtn">Enter as Leader →</button>
+      </div>
+    </div>
+
+    <!-- Follower -->
+    <div class="join-card">
+      <h2>🎧 Join as Follower</h2>
+      <p>Enter the room code from your guide. Audio will sync automatically to the leader's control.</p>
+      <input type="text" id="followerCodeInput" maxlength="4" placeholder="XXXX" autocomplete="off" />
+      <button class="btn btn-primary" id="joinAsFollowerBtn">Join Room →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── App Shell ── -->
+<div class="app" id="app">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-header-left">
+      <h1>Taj Mahal Audio Guide</h1>
+      <span class="badge" id="roleBadge"></span>
+      <span class="badge badge-room" id="roomCodeBadge"></span>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <span>Followers</span>
+        <strong id="followerCount">0</strong>
+      </div>
+      <div class="stat">
+        <span>Seq</span>
+        <strong id="seqNum" style="font-family:var(--font-mono);">—</strong>
+      </div>
+      <div class="stat" id="latencyStat" style="display:none;">
+        <span>Latency</span>
+        <strong id="latencyMs" style="font-family:var(--font-mono);">—</strong>
+      </div>
+      <span class="badge" id="connectionBadge">connecting...</span>
+    </div>
+  </header>
+
+  <!-- Block Tabs -->
+  <div class="block-tabs" id="blockTabs"></div>
+
+  <!-- Content -->
+  <div class="app-body">
+    <div class="content-area">
+
+      <!-- Media -->
+      <div class="media-container" id="mediaContainer">
+        <div class="media-placeholder">Select a stop to begin</div>
+      </div>
+
+      <!-- Block info -->
+      <div class="block-info">
+        <h2 id="blockTitle">—</h2>
+        <p id="blockText"></p>
+      </div>
+
+      <!-- Audio controls -->
+      <div class="audio-section">
+        <div class="audio-controls">
+          <button class="play-btn" id="playBtn" disabled>▶</button>
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar">
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <div class="time-row">
+              <span id="currentTime">0:00</span>
+              <span id="totalTime">0:00</span>
+            </div>
+          </div>
+          <button class="mute-btn" id="muteBtn" title="Mute/Unmute">🔊</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Events log -->
+  <div class="events-panel">
+    <div class="events-title">Event Log</div>
+    <div id="eventLog"></div>
+  </div>
+
+</div>
+
+<!-- Follower waiting overlay -->
+<div class="follower-overlay" id="followerOverlay">
+  <div class="waiting-card">
+    <div class="pulse-dot"></div>
+    <h3>Waiting for leader</h3>
+    <p>The guide will start playback shortly. Your audio will sync automatically.</p>
+    <br>
+    <button class="mute-btn" id="overlayMuteBtn" style="margin:0 auto;">🔊 Unmuted</button>
+  </div>
+</div>
+
+<!-- Sync flash -->
+<div class="sync-flash" id="syncFlash">⚡ synced</div>
+
+<!-- Hidden audio element -->
+<audio id="audioEl" preload="auto"></audio>
+
+<script src="/js/tourData.js"></script>
+<script src="/js/SyncClient.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
