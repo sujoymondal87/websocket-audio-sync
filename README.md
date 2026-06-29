@@ -1,9 +1,16 @@
-# websocket-audio-sync
+# Websocket Audio Sync
 
-> Real-time multi-device audio guide synchronisation over WebSocket — leader controls playback, followers receive timestamped commands and play in sync with sub-200ms alignment.
+> Real-time browser audio synchronisation using WebSockets, clock synchronisation and HTML5 audio — designed for museum guide systems.
 
 <video src="https://github.com/user-attachments/assets/ee1bac52-d08b-4fe9-a013-0ffcfaf706ed" autoplay loop muted playsinline width="100%"></video>
 
+> **Live demo — leader/follower sync across two devices**
+
+---
+
+## Production heritage
+
+Extracted from the synchronisation layer of a production no-code platform serving 30+ cultural institution applications across Spain, France, and Belgium. The production system coordinates audio playback across kiosk and visitor devices during live guided tours — 600+ verified reviews across 35+ countries.
 
 ---
 
@@ -66,9 +73,7 @@ curl http://localhost:3001/health
 
 ---
 
-## Why this exists — engineering version
-
-### Key engineering decisions
+## Key engineering decisions
 
 **Why `ws` directly instead of Socket.io?**
 Socket.io adds ~30KB of abstraction, automatic reconnection logic, and a polling fallback — none of which are needed here. Raw `ws` gives full control over the message schema and connection lifecycle with zero overhead. The protocol is simple enough that the abstraction would hide more than it helps.
@@ -77,10 +82,10 @@ Socket.io adds ~30KB of abstraction, automatic reconnection logic, and a polling
 Audio sync is inherently ephemeral — a room exists only while a session is live. Persisting room state adds latency on every relay and introduces consistency concerns with no benefit. If the server restarts, the room is gone and users rejoin. That tradeoff is acceptable for a live session tool.
 
 **Why clock offset via ping/pong instead of relying on system clocks?**
-Client system clocks can differ by hundreds of milliseconds, and you cannot trust them to be in sync. The ping/pong round-trip gives an estimated server time at the client: `serverTime + (roundTripMs / 2)`. Followers then schedule audio at `executeAtServerMs` relative to that offset — giving deterministic, sub-200ms alignment regardless of individual device clock drift.
+Client system clocks can differ by hundreds of milliseconds and cannot be trusted to be in sync. The ping/pong round-trip gives an estimated server time at the client: `serverTime + (roundTripMs / 2)`. Followers then schedule audio at `executeAtServerMs` relative to that offset — giving deterministic, sub-200ms alignment regardless of individual device clock drift.
 
 **Why vanilla JS instead of React?**
-No build step means the frontend can be served directly by Express from `public/` without Vite, webpack, or a separate deploy. The UI state is simple enough (room code, current stop, play state) that a framework adds complexity rather than removing it.
+No build step means the frontend is served directly by Express from `public/` without Vite, webpack, or a separate deploy. The UI state is simple enough (room code, current stop, play state) that a framework adds complexity rather than removing it.
 
 **Why sequence numbers on every message?**
 WebSocket delivery is ordered per connection but network conditions can cause late-arriving messages after a reconnect. Sequence numbers let followers detect and silently drop stale commands rather than applying an out-of-order seek that would break sync.
@@ -96,6 +101,15 @@ WebSocket delivery is ordered per connection but network conditions can cause la
 | Clock sync degrades on high latency | The ping/pong offset estimate assumes symmetric network delay. On asymmetric or high-jitter connections, the offset error increases. |
 | Single server — no horizontal scale | RoomManager is in-process. Scaling to multiple instances would require moving room state to Redis. |
 | No reconnection recovery | If a follower disconnects mid-session, they rejoin as a fresh client and get the current room snapshot but miss event history. |
+
+---
+
+## Lessons learned
+
+- Clock synchronisation scales better than streaming — sending control signals and letting each client play locally is far more reliable than attempting to stream audio over WebSocket
+- HTML5 Audio was more reliable than Web Audio API for this use case — scheduling via `currentTime` offsets is simpler and more predictable across devices than AudioContext timing
+- Sequence numbers prevented replay issues — without them, a reconnecting follower would re-apply buffered commands and jump to the wrong position
+- Ping compensation reduced drift — even a simple `roundTrip / 2` estimate cuts sync error significantly on variable-latency connections
 
 ---
 
@@ -148,12 +162,6 @@ All messages are JSON with a `type` field.
 Environment vars to set on Render: `NODE_VERSION=22.11.0`, `NPM_CONFIG_PRODUCTION=false`, `PORT=3001`
 
 Keep-warm: UptimeRobot pings `/health` every 5 minutes to prevent Render free-tier spin-down.
-
----
-
-## Production context
-
-Derived from the WebSocket broadcast layer in the Neareo/MyAppZone production platform — a no-code app builder serving cultural institutions across Spain, France, and Belgium. The production system coordinates audio playback across kiosk and visitor devices during live guided tours, with 30+ institutions live and 600+ verified reviews across 35+ countries.
 
 ---
 
