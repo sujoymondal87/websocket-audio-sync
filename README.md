@@ -10,7 +10,7 @@
 
 ## Production heritage
 
-Extracted from the synchronisation layer of a production no-code platform serving 30+ cultural institution applications across Spain, France, and Belgium. The production system coordinates audio playback across kiosk and visitor devices during live guided tours — 600+ verified reviews across 35+ countries.
+Extracted from the synchronisation layer of a production no-code platform serving 30+ cultural institution applications across Spain, France, and Belgium. The production implementation synchronises guided tours across 30+ applications serving museums and cultural institutions — coordinating audio playback across kiosk and visitor devices in live deployments with 600+ verified reviews across 35+ countries.
 
 ---
 
@@ -162,6 +162,16 @@ All messages are JSON with a `type` field.
 Environment vars to set on Render: `NODE_VERSION=22.11.0`, `NPM_CONFIG_PRODUCTION=false`, `PORT=3001`
 
 Keep-warm: UptimeRobot pings `/health` every 5 minutes to prevent Render free-tier spin-down.
+
+---
+
+## Interesting discussion topics
+
+- Why clock synchronisation instead of audio streaming?
+- Why WebSockets over WebRTC?
+- How sequence numbers prevent replay issues
+- What happens when the leader disconnects mid-session?
+- How would this scale horizontally across multiple server instances?
 
 ---
 
